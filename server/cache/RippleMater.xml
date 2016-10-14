@@ -1,0 +1,1797 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25" zv="Cache for UNIX (SUSE Linux Enterprise Server for x86-64) 2015.2 (Build 664U)" ts="2016-10-14 17:15:53">
+<Class name="Ripple.Allergies">
+<Super>%SerialObject,%XML.Adaptor,Mike.ArrayHandler</Super>
+<TimeChanged>64205,36832.408414</TimeChanged>
+<TimeCreated>64194,56288.467695</TimeCreated>
+
+<Property name="sourceId">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Property name="source">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Property name="text">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheSerialState</Type>
+<State>AllergiesState</State>
+<StreamLocation>^Ripple.AllergiesS</StreamLocation>
+<Data name="AllergiesState">
+<Value name="1">
+<Value>SourceID</Value>
+</Value>
+<Value name="2">
+<Value>Source</Value>
+</Value>
+<Value name="3">
+<Value>text</Value>
+</Value>
+<Value name="4">
+<Value>sourceID</Value>
+</Value>
+<Value name="5">
+<Value>source</Value>
+</Value>
+<Value name="6">
+<Value>sourceId</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Ripple.BaseService">
+<Description>
+Ripple.BaseService is the base class for all sample web services.
+Ripple.BaseService illustrates moving error handling for all 
+services into a common base class.
+Currently Ripple.Patient is the only sample web service.</Description>
+<Abstract>1</Abstract>
+<ProcedureBlock>1</ProcedureBlock>
+<Super>%SOAP.WebService</Super>
+<TimeChanged>64190,27796.060835</TimeChanged>
+<TimeCreated>64190,27796.060835</TimeCreated>
+
+<Parameter name="NAMESPACE">
+<Description>
+Namespace.
+Each web service needs to supply this parameter.</Description>
+<Default>http://tempuri.org</Default>
+</Parameter>
+
+<Parameter name="SERVICENAME">
+<Description>
+This is the name of our web service.
+Each web service needs to supply this parameter.</Description>
+<Default>SOAPBase</Default>
+</Parameter>
+
+<Method name="OnInternalFault">
+<Description>
+Override to fix the fault for our needs.
+The OnInternalFault method will be called for all internal Cache errors
+after the default Cache fault has been created.</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>fault:%SOAP.Fault,status:%Status</FormalSpec>
+<ServerOnly>1</ServerOnly>
+<Implementation><![CDATA[
+	Do $system.Status.DecomposeStatus(status,.err)
+	Set detail=$c(13,10)_"    <error xmlns='"_..Namespace()_"' >"_$c(13,10)
+	Set detail=detail_"<special>Internal error detected.</special>"
+	Set detail=detail_"     <text>"_$ZConvert(err(1),"O","HTML")_"</text>"_$c(13,10)
+	Set detail=detail_"    </error>"_$c(13,10)
+	Set fault.detail=detail
+	Set fault.faultstring="Sample Web Service error"
+	Quit
+]]></Implementation>
+</Method>
+
+<Method name="ApplicationError">
+<Description>
+Create our own method to produce application specific SOAP faults.</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>code:%String,error:%String,detail:%String=""</FormalSpec>
+<Implementation><![CDATA[
+	set fault=##class(%SOAP.Fault).%New()
+	set fault.faultcode=code
+	set fault.detail=detail
+	set fault.faultstring=error
+	// ReturnFault must be called to send the fault to the client.
+	// ReturnFault will not return here.
+	do ..ReturnFault(fault)
+]]></Implementation>
+</Method>
+
+<Method name="StatusError">
+<Description>
+Application specific error based on status code</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>code:%String,status:%Status</FormalSpec>
+<Implementation><![CDATA[
+	Do $system.Status.DecomposeStatus(status,.err)
+	Do ..ApplicationError(code,"application error",err(1))
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="Ripple.Contacts">
+<Super>%SerialObject,%XML.Adaptor,Mike.ArrayHandler</Super>
+<TimeChanged>64205,36857.959565</TimeChanged>
+<TimeCreated>64194,59833.620843</TimeCreated>
+
+<Property name="sourceId">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Property name="source">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Property name="text">
+<Type>%String</Type>
+<Collection>array</Collection>
+<Parameter name="MAXLEN" value="150"/>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheSerialState</Type>
+<State>ContactsState</State>
+<StreamLocation>^Ripple.ContactsS</StreamLocation>
+<Data name="ContactsState">
+<Value name="1">
+<Value>sourceId</Value>
+</Value>
+<Value name="2">
+<Value>source</Value>
+</Value>
+<Value name="3">
+<Value>text</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Ripple.ListOfOCRROrdersArray">
+<Super>%Library.ListOfObjects</Super>
+<TimeChanged>64202,24579.232793</TimeChanged>
+<TimeCreated>64202,24579.232793</TimeCreated>
+
+<Parameter name="ELEMENTTYPE">
+<Description>
+The type (class name) of the elements stored in the collection.</Description>
+<Default>Ripple.OCRROrdersArray</Default>
+</Parameter>
+
+<Storage name="Custom">
+<Type>%Library.CompleteCustomStorage</Type>
+</Storage>
+</Class>
+
+
+<Class name="Ripple.ListOfOCRRResultsArray">
+<Super>%Library.ListOfObjects</Super>
+<TimeChanged>64202,26730.910777</TimeChanged>
+<TimeCreated>64202,26730.910777</TimeCreated>
+
+<Parameter name="ELEMENTTYPE">
+<Description>
+The type (class name) of the elements stored in the collection.</Description>
+<Default>Ripple.OCRRResultsArray</Default>
+</Parameter>
+
+<Storage name="Custom">
+<Type>%Library.CompleteCustomStorage</Type>
+</Storage>
+</Class>
+
+
+<Class name="Ripple.ListOfPatientListArray">
+<Super>%Library.ListOfObjects</Super>
+<TimeChanged>64201,55659.621412</TimeChanged>
+<TimeCreated>64201,53353.537991</TimeCreated>
+
+<Parameter name="ELEMENTTYPE">
+<Description>
+The type (class name) of the elements stored in the collection.</Description>
+<Default>Ripple.PatientListArray</Default>
+</Parameter>
+
+<Storage name="Custom">
+<Type>%Library.CompleteCustomStorage</Type>
+</Storage>
+</Class>
+
+
+<Class name="Ripple.Medications">
+<Super>%SerialObject,%XML.Adaptor,Mike.ArrayHandler</Super>
+<TimeChanged>64205,36873.369364</TimeChanged>
+<TimeCreated>64194,59863.099073</TimeCreated>
+
+<Property name="sourceId">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Property name="source">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Property name="text">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheSerialState</Type>
+<State>MedicationsState</State>
+<StreamLocation>^Ripple.MedicationsS</StreamLocation>
+<Data name="MedicationsState">
+<Value name="1">
+<Value>sourceId</Value>
+</Value>
+<Value name="2">
+<Value>source</Value>
+</Value>
+<Value name="3">
+<Value>text</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Ripple.OCRROrderInfo">
+<Super>%Persistent,%XML.Adaptor</Super>
+<TimeChanged>64201,29302.277651</TimeChanged>
+<TimeCreated>64195,48036.707435</TimeCreated>
+
+<Property name="orderNumber">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="author">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="80"/>
+</Property>
+
+<Property name="code">
+<Type>%String</Type>
+</Property>
+
+<Property name="source">
+<Type>%String</Type>
+</Property>
+
+<Property name="sourceId">
+<Type>%String</Type>
+</Property>
+
+<Property name="orderDate">
+<Type>%String</Type>
+</Property>
+
+<Property name="dateCreated">
+<Type>%String</Type>
+</Property>
+
+<Property name="name">
+<Type>%String</Type>
+</Property>
+
+<Property name="terminology">
+<Type>%String</Type>
+</Property>
+
+<Index name="OrdersIndex">
+<PrimaryKey>1</PrimaryKey>
+<Properties>orderNumber</Properties>
+</Index>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^Ripple.OCRROrderInfoD</DataLocation>
+<DefaultData>OCRROrderInfoDefaultData</DefaultData>
+<IdLocation>^Ripple.OCRROrderInfoD</IdLocation>
+<IndexLocation>^Ripple.OCRROrderInfoI</IndexLocation>
+<StreamLocation>^Ripple.OCRROrderInfoS</StreamLocation>
+<Data name="OCRROrderInfoDefaultData">
+<Structure>listnode</Structure>
+<Subscript/>
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>orderNumber</Value>
+</Value>
+<Value name="3">
+<Value>author</Value>
+</Value>
+<Value name="4">
+<Value>code</Value>
+</Value>
+<Value name="5">
+<Value>source</Value>
+</Value>
+<Value name="6">
+<Value>sourceId</Value>
+</Value>
+<Value name="7">
+<Value>orderDate</Value>
+</Value>
+<Value name="8">
+<Value>dateCreated</Value>
+</Value>
+<Value name="9">
+<Value>name</Value>
+</Value>
+<Value name="10">
+<Value>terminology</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Ripple.OCRROrders">
+<Super>%Persistent,%XML.Adaptor</Super>
+<TimeChanged>64197,43428.53527</TimeChanged>
+<TimeCreated>64194,61000.826451</TimeCreated>
+
+<Property name="PatientPIN">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="department">
+<Type>%String</Type>
+</Property>
+
+<Property name="source">
+<Type>%String</Type>
+</Property>
+
+<Property name="sourceId">
+<Type>%String</Type>
+</Property>
+
+<Property name="orderDate">
+<Type>%String</Type>
+</Property>
+
+<Property name="name">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="150"/>
+</Property>
+
+<Index name="OrdersIndex">
+<PrimaryKey>1</PrimaryKey>
+<Properties>PatientPIN,sourceId</Properties>
+</Index>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^Ripple.OCRROrdersD</DataLocation>
+<DefaultData>OCRROrdersDefaultData</DefaultData>
+<IdLocation>^Ripple.OCRROrdersD</IdLocation>
+<IndexLocation>^Ripple.OCRROrdersI</IndexLocation>
+<StreamLocation>^Ripple.OCRROrdersS</StreamLocation>
+<Data name="OCRROrdersDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>PatientPIN</Value>
+</Value>
+<Value name="3">
+<Value>source</Value>
+</Value>
+<Value name="4">
+<Value>sourceId</Value>
+</Value>
+<Value name="5">
+<Value>orderDate</Value>
+</Value>
+<Value name="6">
+<Value>name</Value>
+</Value>
+<Value name="7">
+<Value>department</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Ripple.OCRROrdersArray">
+<Super>%RegisteredObject,%XML.Adaptor</Super>
+<TimeChanged>64202,24493.689395</TimeChanged>
+<TimeCreated>64202,24493.689395</TimeCreated>
+
+<Property name="PatientPIN">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="department">
+<Type>%String</Type>
+</Property>
+
+<Property name="source">
+<Type>%String</Type>
+</Property>
+
+<Property name="sourceId">
+<Type>%String</Type>
+</Property>
+
+<Property name="orderDate">
+<Type>%String</Type>
+</Property>
+
+<Property name="name">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="150"/>
+</Property>
+
+<Index name="OrdersIndex">
+<PrimaryKey>1</PrimaryKey>
+<Properties>PatientPIN,sourceId</Properties>
+</Index>
+</Class>
+
+
+<Class name="Ripple.OCRRResultInfo">
+<Super>%Persistent,%XML.Adaptor</Super>
+<TimeChanged>64202,56787.274083</TimeChanged>
+<TimeCreated>64196,27786.677226</TimeCreated>
+
+<Property name="orderNumber">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="author">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="80"/>
+</Property>
+
+<Property name="conclusion">
+<Type>%String</Type>
+</Property>
+
+<Property name="source">
+<Type>%String</Type>
+</Property>
+
+<Property name="sourceId">
+<Type>%String</Type>
+</Property>
+
+<Property name="status">
+<Type>%String</Type>
+</Property>
+
+<Property name="dateCreated">
+<Type>%String</Type>
+</Property>
+
+<Property name="dateProcessed">
+<Type>%String</Type>
+</Property>
+
+<Property name="testName">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="150"/>
+</Property>
+
+<Property name="testResults">
+<Type>TestResults</Type>
+<Collection>list</Collection>
+</Property>
+
+<Index name="ResultIndex">
+<PrimaryKey>1</PrimaryKey>
+<Properties>orderNumber</Properties>
+</Index>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^Ripple.OCRRResultInfoD</DataLocation>
+<DefaultData>OCRRResultInfoDefaultData</DefaultData>
+<IdLocation>^Ripple.OCRRResultInfoD</IdLocation>
+<IndexLocation>^Ripple.OCRRResultInfoI</IndexLocation>
+<StreamLocation>^Ripple.OCRRResultInfoS</StreamLocation>
+<Data name="OCRRResultInfoDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>orderNumber</Value>
+</Value>
+<Value name="3">
+<Value>author</Value>
+</Value>
+<Value name="4">
+<Value>conclusion</Value>
+</Value>
+<Value name="5">
+<Value>source</Value>
+</Value>
+<Value name="6">
+<Value>sourceId</Value>
+</Value>
+<Value name="7">
+<Value>status</Value>
+</Value>
+<Value name="8">
+<Value>dateCreated</Value>
+</Value>
+<Value name="9">
+<Value>dateProcessed</Value>
+</Value>
+<Value name="10">
+<Value>testName</Value>
+</Value>
+<Value name="11">
+<Value>testResults</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Ripple.OCRRResults">
+<Super>%Persistent,%XML.Adaptor</Super>
+<TimeChanged>64201,24480.444931</TimeChanged>
+<TimeCreated>64194,61604.923461</TimeCreated>
+
+<Property name="PatientPIN">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="department">
+<Type>%String</Type>
+</Property>
+
+<Property name="source">
+<Type>%String</Type>
+</Property>
+
+<Property name="sourceId">
+<Type>%String</Type>
+</Property>
+
+<Property name="dateCreated">
+<Type>%String</Type>
+</Property>
+
+<Property name="dateProcessed">
+<Type>%String</Type>
+</Property>
+
+<Property name="testName">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="150"/>
+</Property>
+
+<Index name="ResultsIndex">
+<PrimaryKey>1</PrimaryKey>
+<Properties>PatientPIN,sourceId</Properties>
+</Index>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^Ripple.OCRRResultsD</DataLocation>
+<DefaultData>OCRRResultsDefaultData</DefaultData>
+<IdLocation>^Ripple.OCRRResultsD</IdLocation>
+<IndexLocation>^Ripple.OCRRResultsI</IndexLocation>
+<StreamLocation>^Ripple.OCRRResultsS</StreamLocation>
+<Data name="OCRRResultsDefaultData">
+<Structure>listnode</Structure>
+<Subscript/>
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>PatientPIN</Value>
+</Value>
+<Value name="3">
+<Value>department</Value>
+</Value>
+<Value name="4">
+<Value>source</Value>
+</Value>
+<Value name="5">
+<Value>sourceId</Value>
+</Value>
+<Value name="6">
+<Value>dateCreated</Value>
+</Value>
+<Value name="7">
+<Value>dateProcessed</Value>
+</Value>
+<Value name="8">
+<Value>testName</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Ripple.OCRRResultsArray">
+<Super>%RegisteredObject,%XML.Adaptor</Super>
+<TimeChanged>64202,26622.358741</TimeChanged>
+<TimeCreated>64202,26622.358741</TimeCreated>
+
+<Property name="PatientPIN">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="department">
+<Type>%String</Type>
+</Property>
+
+<Property name="source">
+<Type>%String</Type>
+</Property>
+
+<Property name="sourceId">
+<Type>%String</Type>
+</Property>
+
+<Property name="dateCreated">
+<Type>%String</Type>
+</Property>
+
+<Property name="dateProcessed">
+<Type>%String</Type>
+</Property>
+
+<Property name="testName">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="150"/>
+</Property>
+
+<Index name="ResultsIndex">
+<PrimaryKey>1</PrimaryKey>
+<Properties>PatientPIN,sourceId</Properties>
+</Index>
+</Class>
+
+
+<Class name="Ripple.OrderService">
+<Description>
+Ripple.OrderService</Description>
+<Import>Sample</Import>
+<IncludeCode>%soap</IncludeCode>
+<ProcedureBlock>1</ProcedureBlock>
+<Super>%SOAP.WebService</Super>
+<TimeChanged>64202,25068.761137</TimeChanged>
+<TimeCreated>64201,22456.2188</TimeCreated>
+
+<Parameter name="SERVICENAME">
+<Description>
+Name of the WebService.</Description>
+<Default>OrderService</Default>
+</Parameter>
+
+<Parameter name="NAMESPACE">
+<Description>
+TODO: change this to actual SOAP namespace.
+SOAP Namespace for the WebService</Description>
+<Default>http://10.78.8.19:57772/csp/samples</Default>
+</Parameter>
+
+<Parameter name="USECLASSNAMESPACES">
+<Description>
+Namespaces of referenced classes will be used in the WSDL.</Description>
+<Default>1</Default>
+</Parameter>
+
+<Method name="getOrderSummary">
+<Description><![CDATA[
+Returns the list of orders for a given patient
+packaged within a <class>Ripple.OCRROrders</class> object.]]></Description>
+<FormalSpec>PatientPIN:%String</FormalSpec>
+<ReturnType>Ripple.ListOfOCRROrdersArray</ReturnType>
+<WebMethod>1</WebMethod>
+<Implementation><![CDATA[
+ ; Create a result set for the Person class' by name.
+ Set result=##class(%ResultSet).%New()
+ Set status=result.Prepare("SELECT * from Ripple.OCRROrders where PatientPIN = ? ORDER BY orderDate")
+ Set status=result.Execute(PatientPIN)
+
+ ; Create a list of objects for the rows and populate the list.
+ Set list=##class(Ripple.ListOfOCRROrdersArray).%New()
+ While result.Next(.status) {
+	Set obj=##class(Ripple.OCRROrdersArray).%New()
+	set obj.department=result.Get("department")
+	set obj.name=result.Get("name")
+	set obj.orderDate=result.Get("orderDate")
+	set obj.PatientPIN=result.Get("PatientPIN")
+	set obj.source=result.Get("source")
+	set obj.sourceId=result.Get("sourceId")
+	Do list.Insert(obj)
+ }
+ 
+ ; Return the list of objects.
+ Quit list
+]]></Implementation>
+</Method>
+
+<Method name="getOrderDetails">
+<Description><![CDATA[
+Returns the order information for a given order number
+packaged within a <class>Ripple.OCRROrderInfo</class> object.]]></Description>
+<FormalSpec>OrderNo:%String</FormalSpec>
+<ReturnType>Ripple.OCRROrderInfo</ReturnType>
+<WebMethod>1</WebMethod>
+<Implementation><![CDATA[
+
+	set id = ""
+	set ordno = " "_OrderNo
+	S id = $O(^Ripple.OCRROrderInfoI("OrdersIndex",ordno,""))
+	Quit ##class(Ripple.OCRROrderInfo).%OpenId(id)
+]]></Implementation>
+</Method>
+
+<Method name="getOrdersHeadline">
+<Description><![CDATA[
+Returns the headline list of orders for a given patient
+packaged within a <class>Ripple.OCRROrders</class> object.]]></Description>
+<FormalSpec>PatientPIN:%String</FormalSpec>
+<ReturnType>Ripple.ListOfOCRROrdersArray</ReturnType>
+<WebMethod>1</WebMethod>
+<Implementation><![CDATA[
+ ; Create a result set for the Person class' by name.
+ Set result=##class(%ResultSet).%New()
+ Set status=result.Prepare("SELECT * from Ripple.OCRROrders where PatientPIN = ? ORDER BY orderDate")
+ Set status=result.Execute(PatientPIN)
+
+ ; Create a list of objects for the rows and populate the list.
+ Set list=##class(Ripple.ListOfOCRROrdersArray).%New()
+ While result.Next(.status) {
+	Set obj=##class(Ripple.OCRROrdersArray).%New()
+	set obj.name=result.Get("name")
+	set obj.source=result.Get("source")
+	set obj.sourceId=result.Get("sourceId")
+	Do list.Insert(obj)
+ }
+ 
+ ; Return the list of objects.
+ Quit list
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="Ripple.PatientList">
+<Description>
+This is the class that will return the patient lists for Ripple</Description>
+<Super>%Persistent,%XML.Adaptor</Super>
+<TimeChanged>64197,43315.441498</TimeChanged>
+<TimeCreated>64190,26606.084099</TimeCreated>
+
+<Property name="PatientPIN">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="PatientEpNo">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="MRNNumber">
+<Type>%String</Type>
+</Property>
+
+<Property name="address">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="150"/>
+</Property>
+
+<Property name="dateOfBirth">
+<Type>%String</Type>
+</Property>
+
+<Property name="gender">
+<Type>%String</Type>
+</Property>
+
+<Property name="name">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="80"/>
+</Property>
+
+<Property name="IHINumber">
+<Type>%String</Type>
+</Property>
+
+<Property name="source">
+<Type>%String</Type>
+</Property>
+
+<Property name="sourceId">
+<Type>%String</Type>
+</Property>
+
+<Property name="Location">
+<Type>%String</Type>
+</Property>
+
+<Property name="Specialty">
+<Type>%String</Type>
+</Property>
+
+<Property name="Consultant">
+<Type>%String</Type>
+</Property>
+
+<Index name="PatientListIndex">
+<PrimaryKey>1</PrimaryKey>
+<Properties>PatientPIN,PatientEpNo</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Query name="BySetting">
+<Type>%SQLQuery</Type>
+<FormalSpec>location:%String</FormalSpec>
+<SqlName>Ripple_Patient_bySetting</SqlName>
+<SqlProc>1</SqlProc>
+<SqlQuery>	select * from ripple.patientlist where Location = :location</SqlQuery>
+<Parameter name="CONTAINID" value="1"/>
+<Parameter name="SELECTMODE" value="RUNTIME"/>
+</Query>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^Ripple.PatientListD</DataLocation>
+<DefaultData>PatientListDefaultData</DefaultData>
+<IdLocation>^Ripple.PatientListD</IdLocation>
+<IndexLocation>^Ripple.PatientListI</IndexLocation>
+<StreamLocation>^Ripple.PatientListS</StreamLocation>
+<Data name="PatientListDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>PatientPIN</Value>
+</Value>
+<Value name="3">
+<Value>MRNNumber</Value>
+</Value>
+<Value name="4">
+<Value>address</Value>
+</Value>
+<Value name="5">
+<Value>dateOfBirth</Value>
+</Value>
+<Value name="6">
+<Value>gender</Value>
+</Value>
+<Value name="7">
+<Value>name</Value>
+</Value>
+<Value name="8">
+<Value>IHINumber</Value>
+</Value>
+<Value name="9">
+<Value>source</Value>
+</Value>
+<Value name="10">
+<Value>sourceId</Value>
+</Value>
+<Value name="11">
+<Value>Location</Value>
+</Value>
+<Value name="12">
+<Value>PatientEpNo</Value>
+</Value>
+<Value name="13">
+<Value>Specialty</Value>
+</Value>
+<Value name="14">
+<Value>Consultant</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Ripple.PatientListArray">
+<Super>%RegisteredObject,%XML.Adaptor</Super>
+<TimeChanged>64201,55654.481028</TimeChanged>
+<TimeCreated>64194,41235.781841</TimeCreated>
+
+<Property name="PatientPIN">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="PatientEpNo">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="MRNNumber">
+<Type>%String</Type>
+</Property>
+
+<Property name="address">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="150"/>
+</Property>
+
+<Property name="dateOfBirth">
+<Type>%String</Type>
+</Property>
+
+<Property name="gender">
+<Type>%String</Type>
+</Property>
+
+<Property name="name">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="80"/>
+</Property>
+
+<Property name="IHINumber">
+<Type>%String</Type>
+</Property>
+
+<Property name="source">
+<Type>%String</Type>
+</Property>
+
+<Property name="sourceId">
+<Type>%String</Type>
+</Property>
+
+<Property name="Location">
+<Type>%String</Type>
+</Property>
+
+<Property name="Specialty">
+<Type>%String</Type>
+</Property>
+
+<Property name="Consultant">
+<Type>%String</Type>
+</Property>
+</Class>
+
+
+<Class name="Ripple.PatientMaster">
+<Description>
+Patient Master Index</Description>
+<Super>%Persistent,%XML.Adaptor,Mike.ArrayHandler</Super>
+<TimeChanged>64205,45555.67929</TimeChanged>
+<TimeCreated>64194,49242.506008</TimeCreated>
+
+<Property name="PatientPIN">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="MRNNumber">
+<Type>%String</Type>
+</Property>
+
+<Property name="address">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="150"/>
+</Property>
+
+<Property name="dateOfBirth">
+<Type>%String</Type>
+</Property>
+
+<Property name="gender">
+<Type>%String</Type>
+</Property>
+
+<Property name="name">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="80"/>
+</Property>
+
+<Property name="IHINumber">
+<Type>%String</Type>
+</Property>
+
+<Property name="gpDetails">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="150"/>
+</Property>
+
+<Property name="pasNumber">
+<Type>%String</Type>
+</Property>
+
+<Property name="telephone">
+<Type>%String</Type>
+</Property>
+
+<Property name="id">
+<Type>%String</Type>
+</Property>
+
+<Property name="allergies">
+<Type>Ripple.Allergies</Type>
+</Property>
+
+<Property name="contacts">
+<Type>Ripple.Contacts</Type>
+</Property>
+
+<Property name="medications">
+<Type>Ripple.Medications</Type>
+</Property>
+
+<Property name="problems">
+<Type>Ripple.Problems</Type>
+</Property>
+
+<Property name="transfers">
+<Type>Ripple.Transfers</Type>
+</Property>
+
+<Index name="PatientIndex">
+<PrimaryKey>1</PrimaryKey>
+<Properties>PatientPIN</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^Ripple.PatientMasterD</DataLocation>
+<DefaultData>PatientMasterDefaultData</DefaultData>
+<IdLocation>^Ripple.PatientMasterD</IdLocation>
+<IndexLocation>^Ripple.PatientMasterI</IndexLocation>
+<StreamLocation>^Ripple.PatientMasterS</StreamLocation>
+<Data name="PatientMasterDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>PatientPIN</Value>
+</Value>
+<Value name="3">
+<Value>MRNNumber</Value>
+</Value>
+<Value name="4">
+<Value>address</Value>
+</Value>
+<Value name="5">
+<Value>dateOfBirth</Value>
+</Value>
+<Value name="6">
+<Value>gender</Value>
+</Value>
+<Value name="7">
+<Value>name</Value>
+</Value>
+<Value name="8">
+<Value>IHINumber</Value>
+</Value>
+<Value name="9">
+<Value>gpDetails</Value>
+</Value>
+<Value name="10">
+<Value>pasNumber</Value>
+</Value>
+<Value name="11">
+<Value>telephone</Value>
+</Value>
+<Value name="12">
+<Value>allergies</Value>
+</Value>
+<Value name="13">
+<Value>id</Value>
+</Value>
+<Value name="14">
+<Value>contacts</Value>
+</Value>
+<Value name="15">
+<Value>medications</Value>
+</Value>
+<Value name="16">
+<Value>problems</Value>
+</Value>
+<Value name="17">
+<Value>transfers</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Ripple.PatientSearchService">
+<Description>
+Ripple.PatientSearchService</Description>
+<Import>Sample</Import>
+<IncludeCode>%soap</IncludeCode>
+<ProcedureBlock>1</ProcedureBlock>
+<Super>%SOAP.WebService</Super>
+<TimeChanged>64202,23393.864472</TimeChanged>
+<TimeCreated>64201,22291.577342</TimeCreated>
+
+<Parameter name="SERVICENAME">
+<Description>
+Name of the WebService.</Description>
+<Default>PatientSearchService</Default>
+</Parameter>
+
+<Parameter name="NAMESPACE">
+<Description>
+TODO: change this to actual SOAP namespace.
+SOAP Namespace for the WebService</Description>
+<Default>http://10.78.8.19:57772/csp/samples</Default>
+</Parameter>
+
+<Parameter name="USECLASSNAMESPACES">
+<Description>
+Namespaces of referenced classes will be used in the WSDL.</Description>
+<Default>1</Default>
+</Parameter>
+
+<Method name="byName">
+<Description><![CDATA[
+Returns the list of all patients with name search
+packaged within a <class>Ripple.PatientList</class> object.]]></Description>
+<FormalSpec>name:%String</FormalSpec>
+<ReturnType>Ripple.ListOfPatientListArray</ReturnType>
+<WebMethod>1</WebMethod>
+<Implementation><![CDATA[
+ ; Create a result set for the Person class' by name.
+ Set result=##class(%ResultSet).%New()
+ Set status=result.Prepare("SELECT * from Ripple.PatientList where name %STARTSWITH ? ORDER BY Name")
+ Set status=result.Execute(name)
+
+ ; Create a list of objects for the rows and populate the list.
+ Set list=##class(Ripple.ListOfPatientListArray).%New()
+ While result.Next(.status) {
+	Set obj=##class(Ripple.PatientListArray).%New()
+	Set obj.address=result.Get("address")
+	Set obj.name=result.Get("name")
+	Set obj.dateOfBirth=result.Get("dateOfBirth")
+	Set obj.IHINumber=result.Get("IHINumber")
+	set obj.Location=result.Get("Location")
+	set obj.MRNNumber=result.Get("MRNNumber")
+	set obj.gender=result.Get("gender")
+	set obj.PatientPIN=result.Get("PatientPIN")
+	set obj.Consultant=result.Get("Consultant")
+	set obj.PatientEpNo=result.Get("PatientEpNo")
+	set obj.source=result.Get("source")
+	set obj.sourceId=result.Get("sourceId")
+	set obj.Specialty=result.Get("Specialty")
+	Do list.Insert(obj)
+ }
+ 
+ ; Return the list of objects.
+ Quit list
+]]></Implementation>
+</Method>
+
+<Method name="bySetting">
+<Description><![CDATA[
+Returns the list of all patients for a given location
+packaged within a <class>Ripple.PatientList</class> object.]]></Description>
+<FormalSpec>location:%String,Age:%String,Gender:%String,totalPatients:%String</FormalSpec>
+<ReturnType>Ripple.ListOfPatientListArray</ReturnType>
+<WebMethod>1</WebMethod>
+<Implementation><![CDATA[
+ ; Create a result set for the Person class' by name.
+ Set result=##class(%ResultSet).%New()
+ Set status=result.Prepare("SELECT * from Ripple.PatientList where location = ? ORDER BY location")
+ Set status=result.Execute(location)
+
+ ; Create a list of objects for the rows and populate the list.
+ Set list=##class(Ripple.ListOfPatientListArray).%New()
+ While result.Next(.status) {
+	Set obj=##class(Ripple.PatientListArray).%New()
+	Set obj.address=result.Get("address")
+	Set obj.name=result.Get("name")
+	Set obj.dateOfBirth=result.Get("dateOfBirth")
+	Set obj.IHINumber=result.Get("IHINumber")
+	set obj.Location=result.Get("Location")
+	set obj.MRNNumber=result.Get("MRNNumber")
+	set obj.gender=result.Get("gender")
+	set obj.PatientPIN=result.Get("PatientPIN")
+	set obj.Consultant=result.Get("Consultant")
+	set obj.PatientEpNo=result.Get("PatientEpNo")
+	set obj.source=result.Get("source")
+	set obj.sourceId=result.Get("sourceId")
+	set obj.Specialty=result.Get("Specialty")
+	If $L(Gender) If Gender=result.Get("gender") D
+	.Do list.Insert(obj)
+	If '$L(Gender) D
+	.Do list.Insert(obj)
+ }
+ 
+ ; Return the list of objects.
+ Quit list
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="Ripple.PatientService">
+<Description>
+Ripple.PatientService</Description>
+<Import>Sample</Import>
+<IncludeCode>%soap</IncludeCode>
+<ProcedureBlock>1</ProcedureBlock>
+<Super>%SOAP.WebService</Super>
+<TimeChanged>64201,55818.917745</TimeChanged>
+<TimeCreated>64201,22204.234168</TimeCreated>
+
+<Parameter name="SERVICENAME">
+<Description>
+Name of the WebService.</Description>
+<Default>PatientService</Default>
+</Parameter>
+
+<Parameter name="NAMESPACE">
+<Description>
+TODO: change this to actual SOAP namespace.
+SOAP Namespace for the WebService</Description>
+<Default>http://10.78.8.19:57772/csp/samples</Default>
+</Parameter>
+
+<Parameter name="USECLASSNAMESPACES">
+<Description>
+Namespaces of referenced classes will be used in the WSDL.</Description>
+<Default>1</Default>
+</Parameter>
+
+<Method name="getPatient">
+<Description><![CDATA[
+Returns the patient dataset
+packaged within a <class>Ripple.PatientMaster</class> object.]]></Description>
+<FormalSpec>PatientPIN:%String</FormalSpec>
+<ReturnType>Ripple.PatientMaster</ReturnType>
+<WebMethod>1</WebMethod>
+<Implementation><![CDATA[
+
+	set id = ""
+	set pin = " "_PatientPIN
+	S id = $O(^Ripple.PatientMasterI("PatientIndex",pin,""))
+	Quit ##class(Ripple.PatientMaster).%OpenId(id)
+]]></Implementation>
+</Method>
+
+<Method name="getPatientSummary">
+<Description><![CDATA[
+Returns the summary list of all patients
+packaged within a <class>Ripple.PatientList</class> object.]]></Description>
+<ReturnType>Ripple.ListOfPatientListArray</ReturnType>
+<WebMethod>1</WebMethod>
+<Implementation><![CDATA[
+ ; Create a result set for the Person class' by name.
+ Set result=##class(%ResultSet).%New()
+ Set status=result.Prepare("SELECT * from Ripple.PatientList ORDER BY Name")
+ Set status=result.Execute()
+
+ ; Create a list of objects for the rows and populate the list.
+ Set list=##class(Ripple.ListOfPatientListArray).%New()
+ While result.Next(.status) {
+	Set obj=##class(Ripple.PatientListArray).%New()
+	Set obj.address=result.Get("address")
+	Set obj.name=result.Get("name")
+	Set obj.dateOfBirth=result.Get("dateOfBirth")
+	Set obj.IHINumber=result.Get("IHINumber")
+	set obj.Location=result.Get("Location")
+	set obj.MRNNumber=result.Get("MRNNumber")
+	set obj.gender=result.Get("gender")
+	set obj.PatientPIN=result.Get("PatientPIN")
+	Do list.Insert(obj)
+ }
+ 
+ ; Return the list of objects.
+ Quit list
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="Ripple.PatientServiceJSON">
+<Description>
+Ripple.PatientServiceJSON</Description>
+<Super>%Persistent</Super>
+<TimeChanged>64205,47641.806427</TimeChanged>
+<TimeCreated>64201,22204.234168</TimeCreated>
+
+<Method name="reformat">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[fieldName:%String,&data:%String]]></FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+  m inArr=data(fieldName)
+  s name=""
+  s empty=1
+  f  s name=$o(inArr(name)) q:name=""  d
+  . s ix=""
+  . f  s ix=$o(inArr(name,ix)) q:ix=""  d
+  . . s outArr(ix,name)=inArr(name,ix)
+  . . s empty=0
+  k data(fieldName)
+  m data(fieldName)=outArr
+  QUIT 1
+]]></Implementation>
+</Method>
+
+<Method name="getPatient">
+<Description>
+Returns the patient dataset</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>PatientPIN:%String</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+
+	set id = ""
+	set pin = " "_PatientPIN
+	S id = $O(^Ripple.PatientMasterI("PatientIndex",pin,""))
+	s patient=##class(Ripple.PatientMaster).%OpenId(id)
+	s ok=patient.toArray(.data)
+	f name="contacts","allergies","medications","problems","transfers" d
+	. s ok=..reformat(name,.data)
+    k ^tmp($j)
+	m ^tmp($j)=data
+	QUIT 1
+]]></Implementation>
+</Method>
+
+<UDLText name="T">
+<Content><![CDATA[
+// Method getPatientSummary() As Ripple.ListOfPatientListArray [ WebMethod ]
+
+]]></Content>
+</UDLText>
+
+<Method name="getPatientSummary">
+<Description><![CDATA[
+Returns the summary list of all patients
+packaged within a <class>Ripple.PatientList</class> object.]]></Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+ ; Create a result set for the Person class' by name.
+ Set result=##class(%ResultSet).%New()
+ Set status=result.Prepare("SELECT * from Ripple.PatientList ORDER BY Name")
+ Set status=result.Execute()
+ // Map the resultSet records to a temporary global
+ k ^tmp($j)
+ While result.Next(.status) {
+    set ix=result.Get("PatientPIN")
+    //s ix=$increment(^tmp($j))
+    set id=result.Get("ID")
+    s patient=##class(Ripple.PatientMaster).%OpenId(id)
+	m ^tmp($j,ix)=result.Data
+	s ^tmp($j,ix,"gpDetails")=patient.gpDetails
+	s ^tmp($j,ix,"phone")=patient.telephone
+	s ^tmp($j,ix,"pasNo")=patient.pasNumber
+ }
+ ; The temporary global is now ready for getDocument() mapping to JSON
+ Quit 1
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^Ripple.PatientServiceJSOND</DataLocation>
+<DefaultData>PatientServiceJSONDefaultData</DefaultData>
+<IdLocation>^Ripple.PatientServiceJSOND</IdLocation>
+<IndexLocation>^Ripple.PatientServiceJSONI</IndexLocation>
+<StreamLocation>^Ripple.PatientServiceJSONS</StreamLocation>
+<Data name="PatientServiceJSONDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Ripple.Problems">
+<Super>%SerialObject,%XML.Adaptor,Mike.ArrayHandler</Super>
+<TimeChanged>64205,36892.109949</TimeChanged>
+<TimeCreated>64194,59918.83286</TimeCreated>
+
+<Property name="sourceId">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Property name="source">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Property name="text">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheSerialState</Type>
+<State>ProblemsState</State>
+<StreamLocation>^Ripple.ProblemsS</StreamLocation>
+<Data name="ProblemsState">
+<Value name="1">
+<Value>sourceId</Value>
+</Value>
+<Value name="2">
+<Value>source</Value>
+</Value>
+<Value name="3">
+<Value>text</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Ripple.ResultArray">
+<Super>%SerialObject,%XML.Adaptor</Super>
+<TimeChanged>64202,56077.038479</TimeChanged>
+<TimeCreated>64196,27563.147295</TimeCreated>
+
+<Property name="ID">
+<Type>%String</Type>
+</Property>
+
+<Property name="comment">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="100"/>
+</Property>
+
+<Property name="normalRange">
+<Type>%String</Type>
+</Property>
+
+<Property name="result">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="100"/>
+</Property>
+
+<Property name="unit">
+<Type>%String</Type>
+</Property>
+
+<Property name="value">
+<Type>%String</Type>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheSerialState</Type>
+<State>ResultArrayState</State>
+<StreamLocation>^Ripple.ResultArrayS</StreamLocation>
+<Data name="ResultArrayState">
+<Value name="1">
+<Value>comment</Value>
+</Value>
+<Value name="2">
+<Value>normalRange</Value>
+</Value>
+<Value name="3">
+<Value>result</Value>
+</Value>
+<Value name="4">
+<Value>unit</Value>
+</Value>
+<Value name="5">
+<Value>value</Value>
+</Value>
+<Value name="6">
+<Value>ID</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Ripple.ResultArrayTest">
+<Super>%SerialObject,%XML.Adaptor</Super>
+<TimeChanged>64196,55275.397837</TimeChanged>
+<TimeCreated>64196,55222.82418</TimeCreated>
+
+<Property name="ID">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Property name="comment">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Property name="normalRange">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Property name="result">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Property name="unit">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Property name="value">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheSerialState</Type>
+<State>ResultArrayTestState</State>
+<StreamLocation>^Ripple.ResultArrayTestS</StreamLocation>
+<Data name="ResultArrayTestState">
+<Structure>listnode</Structure>
+<Subscript/>
+<Value name="1">
+<Value>ID</Value>
+</Value>
+<Value name="2">
+<Value>comment</Value>
+</Value>
+<Value name="3">
+<Value>normalRange</Value>
+</Value>
+<Value name="4">
+<Value>result</Value>
+</Value>
+<Value name="5">
+<Value>unit</Value>
+</Value>
+<Value name="6">
+<Value>value</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Ripple.ResultService">
+<Description>
+Ripple.ResultService</Description>
+<Import>Sample</Import>
+<IncludeCode>%soap</IncludeCode>
+<ProcedureBlock>1</ProcedureBlock>
+<Super>%SOAP.WebService</Super>
+<TimeChanged>64202,28273.441924</TimeChanged>
+<TimeCreated>64201,22547.893915</TimeCreated>
+
+<Parameter name="SERVICENAME">
+<Description>
+Name of the WebService.</Description>
+<Default>ResultService</Default>
+</Parameter>
+
+<Parameter name="NAMESPACE">
+<Description>
+TODO: change this to actual SOAP namespace.
+SOAP Namespace for the WebService</Description>
+<Default>http://10.78.8.19:57772/csp/samples</Default>
+</Parameter>
+
+<Parameter name="USECLASSNAMESPACES">
+<Description>
+Namespaces of referenced classes will be used in the WSDL.</Description>
+<Default>1</Default>
+</Parameter>
+
+<Method name="getResultSummary">
+<Description><![CDATA[
+Returns the list of results for a given patient
+packaged within a <class>Ripple.OCRRResults</class> object.]]></Description>
+<FormalSpec>PatientPIN:%String</FormalSpec>
+<ReturnType>Ripple.ListOfOCRRResultsArray</ReturnType>
+<WebMethod>1</WebMethod>
+<Implementation><![CDATA[
+ ; Create a result set for the Person class' by name.
+ Set result=##class(%ResultSet).%New()
+ Set status=result.Prepare("SELECT * from Ripple.OCRRResults where PatientPIN = ? ORDER BY dateCreated")
+ Set status=result.Execute(PatientPIN)
+
+ ; Create a list of objects for the rows and populate the list.
+ Set list=##class(Ripple.ListOfOCRRResultsArray).%New()
+ While result.Next(.status) {
+	Set obj=##class(Ripple.OCRRResultsArray).%New()
+	set obj.testName=result.Get("testName")
+	set obj.department=result.Get("department")
+	set obj.dateCreated=result.Get("dateCreated")
+	set obj.dateProcessed=result.Get("dateProcessed")
+	set obj.PatientPIN=result.Get("PatientPIN")
+	set obj.source=result.Get("source")
+	set obj.sourceId=result.Get("sourceId")
+	Do list.Insert(obj)
+ }
+ 
+ ; Return the list of objects.
+ Quit list
+]]></Implementation>
+</Method>
+
+<Method name="getResultDetails">
+<Description><![CDATA[
+Returns the result information for a given order number
+packaged within a <class>Ripple.OCRRResultInfo</class> object.]]></Description>
+<FormalSpec>OrderNo:%String</FormalSpec>
+<ReturnType>Ripple.OCRRResultInfo</ReturnType>
+<WebMethod>1</WebMethod>
+<Implementation><![CDATA[
+
+	set id = ""
+	set ordno = " "_OrderNo
+	S id = $O(^Ripple.OCRRResultInfoI("ResultIndex",ordno,""))
+	Quit ##class(Ripple.OCRRResultInfo).%OpenId(id)
+]]></Implementation>
+</Method>
+
+<Method name="getResultsHeadline">
+<Description><![CDATA[
+Returns the headline list of results for a given patient
+packaged within a <class>Ripple.OCRRResults</class> object.]]></Description>
+<FormalSpec>PatientPIN:%String</FormalSpec>
+<ReturnType>Ripple.ListOfOCRRResultsArray</ReturnType>
+<WebMethod>1</WebMethod>
+<Implementation><![CDATA[
+ ; Create a result set for the Person class' by name.
+ Set result=##class(%ResultSet).%New()
+ Set status=result.Prepare("SELECT * from Ripple.OCRRResults where PatientPIN = ? ORDER BY dateCreated")
+ Set status=result.Execute(PatientPIN)
+
+ ; Create a list of objects for the rows and populate the list.
+ Set list=##class(Ripple.ListOfOCRRResultsArray).%New()
+ While result.Next(.status) {
+	Set obj=##class(Ripple.OCRRResultsArray).%New()
+	set obj.testName=result.Get("testName")
+	set obj.source=result.Get("source")
+	set obj.sourceId=result.Get("sourceId")
+	Do list.Insert(obj)
+ }
+ 
+ ; Return the list of objects.
+ Quit list
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="Ripple.TestResults">
+<Super>%SerialObject,%XML.Adaptor</Super>
+<TimeChanged>64202,52534.621575</TimeChanged>
+<TimeCreated>64202,52534.084653</TimeCreated>
+
+<Property name="ID">
+<Type>%String</Type>
+</Property>
+
+<Property name="comment">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="100"/>
+</Property>
+
+<Property name="normalRange">
+<Type>%String</Type>
+</Property>
+
+<Property name="result">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="100"/>
+</Property>
+
+<Property name="unit">
+<Type>%String</Type>
+</Property>
+
+<Property name="value">
+<Type>%String</Type>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheSerialState</Type>
+<State>TestResultsState</State>
+<StreamLocation>^Ripple.TestResultsS</StreamLocation>
+<Data name="TestResultsState">
+<Structure>listnode</Structure>
+<Subscript/>
+<Value name="1">
+<Value>ID</Value>
+</Value>
+<Value name="2">
+<Value>comment</Value>
+</Value>
+<Value name="3">
+<Value>normalRange</Value>
+</Value>
+<Value name="4">
+<Value>result</Value>
+</Value>
+<Value name="5">
+<Value>unit</Value>
+</Value>
+<Value name="6">
+<Value>value</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Ripple.Transfers">
+<Super>%SerialObject,%XML.Adaptor,Mike.ArrayHandler</Super>
+<TimeChanged>64205,36906.787158</TimeChanged>
+<TimeCreated>64194,60063.99085</TimeCreated>
+
+<Property name="dateOfTransfer">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Property name="from">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Property name="sourceId">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Property name="source">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Property name="to">
+<Type>%String</Type>
+<Collection>array</Collection>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheSerialState</Type>
+<State>TransfersState</State>
+<StreamLocation>^Ripple.TransfersS</StreamLocation>
+<Data name="TransfersState">
+<Value name="1">
+<Value>dateOfTransfer</Value>
+</Value>
+<Value name="2">
+<Value>from</Value>
+</Value>
+<Value name="3">
+<Value>sourceId</Value>
+</Value>
+<Value name="4">
+<Value>source</Value>
+</Value>
+<Value name="5">
+<Value>to</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>
