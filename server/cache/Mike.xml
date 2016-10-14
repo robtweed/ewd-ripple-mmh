@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25" zv="Cache for UNIX (SUSE Linux Enterprise Server for x86-64) 2015.2 (Build 664U)" ts="2016-10-14 17:43:47">
+<Class name="Mike.ArrayHandler">
+<Description><![CDATA[
+This super class implements the following methods for any class that inherits from it.<br /><br />
+<b>Default methods</b> (can be turned off by overriding a class parameter):
+<ul>
+<li><i>fromArray</i> - Populate the instance with property values passed in via a local array</li>
+<li><i>toArray</i> - Export the instance properties to a local array</li>
+</ul>
+<b>Optional methods</b> (must be turned on by overriding a class parameter):
+<ul>
+</ul>
+]]></Description>
+<Super>%RegisteredObject</Super>
+<TimeChanged>64204,72346.992687</TimeChanged>
+<TimeCreated>63666,41855.040373</TimeCreated>
+
+<Parameter name="ImplementArrayMethods">
+<Description><![CDATA[
+Class parameter used to determine whether the generated Array instance methods are implemented.<br />
+The public methods affected by this flag are:
+<ul>
+<li>fromArray(.data, overwrite)</li>
+<li>toArray(.data, sparse)</li>
+</ul>
+The following supporting private methods are also affected:
+<ul>
+</ul>
+<br /><br />
+The default is 1.<br />
+Override to 0 to prevent these methods from being implemented.]]></Description>
+<Type>BOOLEAN</Type>
+<Default>1</Default>
+</Parameter>
+
+<Method name="fromArray">
+<Description><![CDATA[
+Method generator to create an instance method that instantiates Property values from a passed in array.
+
+<br /><br />The following parameters are used:
+<ul>
+<li><i>data</i> = a %String, passed by reference, an array of values, where the keys match the Property names</li>
+<li><i>overwrite</i> = a %Boolean, this flag determines whether all Properties are set (=1, the default), or just those specifically defined in the data array (=0)</li>
+</ul>
+<br /><br /><i>ReturnValue</i> = a %Boolean value set to 1<br /><br />
+
+Examples:<br />
+<pre>
+set Ok=##class(ClassName).fromArray(.data)      // Populates every Property in the class with $get(data({PropertyName})).
+set Ok=##class(ClassName).fromArray(.data,0)    // Populates only those Properties where data({PropertyName}) is defined.
+</pre>
+]]></Description>
+<CodeMode>objectgenerator</CodeMode>
+<FormalSpec><![CDATA[&data:%String,overwrite:%Boolean=1]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+  // Do not implement this method unless ImplementStorageMethods=1
+  if '$get(%parameter("ImplementArrayMethods")) quit $$$OK
+  
+  // Create a blank method if compiling the superclass (LOR.SerialObject)
+  // or a sub-class without Properties
+  set cClassName=%class.%Id()
+  set cPropertyCount=%class.Properties.Count()
+  if (cClassName="Mike.ArrayHandler") || (cPropertyCount=0) {
+    do %code.WriteLine(" quit $$$OK")
+    quit $$$OK
+  }
+
+  // Interrogate the Class's Methods object to get an array of methods.
+  kill methods
+  set method=""
+  for  {
+    set method=%class.Methods.Next(method)
+    quit:method=""
+    set cMethodName=%class.Methods.GetAt(method).Name
+    set methods(cMethodName)=cMethodName
+  }
+
+  // Interrogate the Class's Properties object to get an array of fields.
+  kill arrays,calculated,fields,objRef
+  set property=""
+  for  {
+    set property=%class.Properties.Next(property)
+    quit:property=""
+    // Don't use Transient Properties
+    if %class.Properties.GetAt(property).Transient Continue
+    set cPropertyName=%class.Properties.GetAt(property).Name
+    set cPropertyType=%class.Properties.GetAt(property).Type
+    if $extract(cPropertyType)'="%" {
+      set ref=##class(%Dictionary.ClassDefinition).%OpenId(cPropertyType)
+      if $isobject(ref),ref.Super["Mike.ArrayHandler" {
+        set objRef(cPropertyName)=cPropertyType
+        Continue
+      }
+    }
+    if %class.Properties.GetAt(property).Collection'="" set arrays(cPropertyName)=cPropertyName Continue
+    if %class.Properties.GetAt(property).Calculated set calculated(cPropertyName)=cPropertyName
+    set fields(cPropertyName)=cPropertyName
+  }
+
+  // Now generate the method
+  do %code.WriteLine(" if overwrite {")
+  set property=""
+  for  {
+    set property=$order(fields(property))
+    quit:property=""
+    if $data(calculated(property)) {
+      if $data(methods(property_"Set")) {
+        do %code.WriteLine("   do .."_property_"Set($get(data("""_property_""")))")
+      }
+    } else {
+      do %code.WriteLine("   set .."_property_"=$get(data("""_property_"""))")
+    }
+  }
+  // Arrays and lists. Call the Clear() method if overwrite=1.
+  set property=""
+  for  {
+    set property=$order(arrays(property))
+    quit:property=""
+    do %code.WriteLine("   do .."_property_".Clear()")
+  }
+  // Objects with Mike.ArrayHandler as a superclass. Instantiate a new instance if overwrite=1.
+  set property=""
+  for  {
+    set property=$order(objRef(property))
+    quit:property=""
+    do %code.WriteLine("   set .."_property_"=##class("_objRef(property)_").%New()")
+  }
+  do %code.WriteLine(" } else  {")
+  set property=""
+  for  {
+    set property=$order(fields(property))
+    quit:property=""
+    if $data(calculated(property)) {
+      if $data(methods(property_"Set")) {
+        do %code.WriteLine("   if $data(data("""_property_"""),value)#10 do .."_property_"Set(value)")
+      }
+    } else {
+      do %code.WriteLine("   if $data(data("""_property_"""),value)#10 set .."_property_"=value")
+    }
+  }
+  do %code.WriteLine(" }")
+  // Arrays and lists. If overwrite specified, the properties will be cleared above.
+  set property=""
+  for  {
+    set property=$order(arrays(property))
+    quit:property=""
+    do %code.WriteLine(" set id="""" for  { set id=$o(data("""_property_""",id),1,value) q:id=""""  do .."_property_".SetAt(value,id) }")
+  }
+  // Objects with Mike.ArrayHandler as a superclass. Call the fromArray() method if required.
+  set property=""
+  for  {
+    set property=$order(objRef(property))
+    quit:property=""
+    do %code.WriteLine(" if $data(data("""_property_""")) {")
+    do %code.WriteLine("   kill subData")
+    do %code.WriteLine("   merge subData=data("""_property_""")")
+    do %code.WriteLine("   if '$isObject(.."_property_") set .."_property_"=##class("_objRef(property)_").%New()")
+    do %code.WriteLine("   do .."_property_".fromArray(.subData,overwrite)")
+    do %code.WriteLine(" }")
+  }
+  do %code.WriteLine(" quit $$$OK")
+  quit $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="toArray">
+<Description><![CDATA[
+Method generator to create an instance method that returns an array of Property values.
+
+<br /><br />The following parameters are used:
+<ul>
+<li><i>data</i> = a %String, passed by reference, an array of values, where the keys match the Property names</li>
+<li><i>sparse</i> = a %Boolean, this flag determines whether the returned array contains values for all Properties (=0, default) or a sparse array of just those that are non-null (=1)</li>
+</ul>
+<br /><br /><i>ReturnValue</i> = a %Boolean value set to 1<br /><br />
+
+Examples:<br />
+<pre>
+set Ok=##class(ClassName).toArray(.data)      // Returns values for all Properties in data({PropertyName}).
+set Ok=##class(ClassName).toArray(.data,1)    // Returns a sparse array of just those Properties where data({PropertyName}) is non-null.
+</pre>
+]]></Description>
+<CodeMode>objectgenerator</CodeMode>
+<FormalSpec><![CDATA[&data:%String,sparse:%Boolean=0]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+  // Do not implement this method unless ImplementStorageMethods=1
+  if '$get(%parameter("ImplementArrayMethods")) quit $$$OK
+  
+  // Create a blank method if compiling the superclass (LOR.SerialObject)
+  // or a sub-class without Properties
+  set cClassName=%class.%Id()
+  set cPropertyCount=%class.Properties.Count()
+  if (cClassName="Mike.ArrayHandler") || (cPropertyCount=0) {
+    do %code.WriteLine(" quit $$$OK")
+    quit $$$OK
+  }
+
+  // Interrogate the Class's Methods object to get an array of methods.
+  kill methods
+  set method=""
+  for  {
+    set method=%class.Methods.Next(method)
+    quit:method=""
+    set cMethodName=%class.Methods.GetAt(method).Name
+    set methods(cMethodName)=cMethodName
+  }
+
+  // Interrogate the Class's Properties object to get an array of fields.
+  kill arrays,calculated,fields,objRef
+  set property=""
+  for  {
+    set property=%class.Properties.Next(property)
+    quit:property=""
+    // Don't use Transient Properties
+    if %class.Properties.GetAt(property).Transient Continue
+    set cPropertyName=%class.Properties.GetAt(property).Name
+    set cPropertyType=%class.Properties.GetAt(property).Type
+    if $extract(cPropertyType)'="%" {
+      set ref=##class(%Dictionary.ClassDefinition).%OpenId(cPropertyType)
+      if $isobject(ref),ref.Super["Mike.ArrayHandler" {
+        set objRef(cPropertyName)=cPropertyType
+        Continue
+      }
+    }
+    if %class.Properties.GetAt(property).Collection'="" set arrays(cPropertyName)=cPropertyName Continue
+    if %class.Properties.GetAt(property).Calculated set calculated(cPropertyName)=cPropertyName
+    set fields(cPropertyName)=cPropertyType
+  }
+
+  // Now generate the method
+  do %code.WriteLine(" kill data")
+  do %code.WriteLine(" if sparse {")
+  set property=""
+  for  {
+    set property=$order(fields(property))
+    quit:property=""
+    if $data(calculated(property)) {
+      if $data(methods(property_"Get")) {
+        do %code.WriteLine("   set ret=.."_property_"Get() if ret'="""" set data("""_property_""")=ret")
+      }
+    } else {
+      do %code.WriteLine("   if .."_property_"'="""" set data("""_property_""")=.."_property)
+    }
+  }
+  do %code.WriteLine(" } else  {")
+  set property=""
+  for  {
+    set property=$order(fields(property))
+    quit:property=""
+    if $data(calculated(property)) {
+      if $data(methods(property_"Get")) {
+        do %code.WriteLine("   set data("""_property_""")=.."_property_"Get()")
+      }
+    } else {
+      do %code.WriteLine("   set data("""_property_""")=.."_property)
+    }
+  }
+  do %code.WriteLine(" }")
+  // Arrays and lists are always sparse so they can be dealt with separately
+  set property=""
+  for  {
+    set property=$order(arrays(property))
+    quit:property=""
+    do %code.WriteLine(" set id="""" for  { set id=.."_property_".Next(id) q:id=""""  s data("""_property_""",id)=.."_property_".GetAt(id) }")
+  }
+  // Objects with Mike.ArrayHandler as a superclass can be exported recursively
+  set property=""
+  for  {
+    set property=$order(objRef(property))
+    quit:property=""
+    do %code.WriteLine(" if $isObject(.."_property_") {")
+    do %code.WriteLine("   kill subData")
+    do %code.WriteLine("   do .."_property_".toArray(.subData,sparse)")
+    do %code.WriteLine("   merge data("""_property_""")=subData")
+    do %code.WriteLine(" }")
+  }
+  do %code.WriteLine(" quit $$$OK")
+  quit $$$OK
+]]></Implementation>
+</Method>
+</Class>
+</Export>
